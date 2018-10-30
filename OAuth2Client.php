@@ -35,7 +35,7 @@ class OAuth2ClientHooks {
 		if( isset( $wgOAuth2Client['configuration']['service_login_link_text'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_login_link_text'] ) ) {
 			$service_login_link_text = $wgOAuth2Client['configuration']['service_login_link_text'];
 		} else {
-			$service_login_link_text = wfMessage('oauth2client-header-link-text', $service_name)->text();
+			$service_login_link_text = wfMessage('oauth2client-login-header', $service_name)->text();
 		}
 
 		$inExt = ( null == $page || ('OAuth2Client' == substr( $page->getText(), 0, 12) ) || strstr($page->getText(), 'Logout') );

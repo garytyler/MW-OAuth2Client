@@ -3,7 +3,6 @@
 
 	"oauth2client-act-as-a-client-to-any-oauth2-server": "Act as a client to any OAuth2 server",
 	"oauth2client-couldnotconnect": "Kon geen verbinding maken met de OAuth2 server",
-	"oauth2client-header-link-text": "Aanmelden via $1",
 
 	"oauth2client-login-header": "Aanmelden via $1",
 	"oauth2client-you-can-login-to-this-wiki-with-oauth2": "U kunt zich aanmelden op deze wiki via uw $1 account",

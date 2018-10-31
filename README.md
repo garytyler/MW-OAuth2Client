@@ -5,9 +5,9 @@ Requires MediaWiki 1.25+.
 
 ## Installation
 
-Clone this repo into the extension directory. In the cloned directory, run 'git submodule update --init' to initialize the local configuration file and fetch all data from the OAuth2 client library.
+Clone this repo into the extension directory.
 
-Finally, run [composer](https://getcomposer.org/) in /vendors/oauth2-client to install the library dependency.
+Run [composer](https://getcomposer.org/) in /vendors/oauth2-client to install the library dependency.
 
 ```
 composer install

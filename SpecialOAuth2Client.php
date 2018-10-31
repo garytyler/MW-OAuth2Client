@@ -42,7 +42,7 @@ class SpecialOAuth2Client extends SpecialPage {
 		global $wgOAuth2Client, $wgScriptPath;
 		global $wgServer, $wgArticlePath;
 
-		require __DIR__ . '/vendors/oauth2-client/vendor/autoload.php';
+		require __DIR__ . '/vendor/autoload.php';
 
 		$this->_provider = new \League\OAuth2\Client\Provider\GenericProvider([
 			'clientId'                => $wgOAuth2Client['client']['id'],    // The client ID assigned to you by the provider

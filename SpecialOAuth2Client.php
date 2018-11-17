@@ -65,6 +65,9 @@ class SpecialOAuth2Client extends SpecialPage {
 			case 'callback':
 				$this->_handleCallback();
 			break;
+			case 'signup':
+				$this->_signupForm();
+			break;
 			default:
 				$this->_default();
 			break;
@@ -72,7 +75,7 @@ class SpecialOAuth2Client extends SpecialPage {
 
 	}
 
-	private function _redirect() {
+	private function _redirect( $signupusername = null ){
 
 		global $wgRequest, $wgOut;
 		$wgRequest->getSession()->persist();
@@ -82,6 +85,13 @@ class SpecialOAuth2Client extends SpecialPage {
 		// urlAuthorize option and generates and applies any necessary parameters
 		// (e.g. state).
 		$authorizationUrl = $this->_provider->getAuthorizationUrl();
+
+		if ($signupusername != null){
+			global $wgOAuth2Client;
+			$oldredirect = $wgOAuth2Client['configuration']['redirect_uri'];
+			$newredirect = $oldredirect.'?signupusername='.$signupusername;
+			$authorizationUrl = $this->_provider->getAuthorizationUrl(['redirect_uri'=>$newredirect]);
+		}
 
 		// Get the state generated for you and store it to the session.
 		$wgRequest->getSession()->set('oauth2state', $this->_provider->getState());
@@ -93,13 +103,11 @@ class SpecialOAuth2Client extends SpecialPage {
 
 	private function _handleCallback(){
 		try {
-
 			// Try to get an access token using the authorization code grant.
 			$accessToken = $this->_provider->getAccessToken('authorization_code', [
 				'code' => $_GET['code']
 			]);
 		} catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
-
 			// Failed to get the access token or user details.
 			exit($e->getMessage());
 
@@ -107,6 +115,8 @@ class SpecialOAuth2Client extends SpecialPage {
 
 		$resourceOwner = $this->_provider->getResourceOwner($accessToken);
 		$user = $this->_userHandling( $resourceOwner->toArray() );
+		if (!$user) return true;
+
 		$user->setCookies();
 
 		global $wgOut, $wgRequest;
@@ -117,7 +127,6 @@ class SpecialOAuth2Client extends SpecialPage {
 			$wgRequest->getSession()->remove('returnto');
 			$wgRequest->getSession()->save();
 		}
-
 		if( !$title instanceof Title || 0 > $title->mArticleID ) {
 			$title = Title::newMainPage();
 		}
@@ -133,6 +142,7 @@ class SpecialOAuth2Client extends SpecialPage {
 		if ( !$wgUser->isLoggedIn() ) {
 			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $service_name );
 			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getTitle( 'redirect' )->getPrefixedURL(), $service_name );
+			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getTitle( 'signup' )->getPrefixedURL(), $service_name );
 
 		} else {
 			$wgOut->addWikiMsg( 'oauth2client-youre-already-loggedin' );
@@ -145,6 +155,20 @@ class SpecialOAuth2Client extends SpecialPage {
 
 		$username = JsonHelper::extractValue($response, $wgOAuth2Client['configuration']['username']);
 		$email =  JsonHelper::extractValue($response, $wgOAuth2Client['configuration']['email']);
+
+		if ($username == false){
+			$foundusername = $this->_getUserNameFromEmail($email);
+			if (isset($foundusername) && 0 < strlen($foundusername)){
+				$username = $foundusername;
+			} elseif (isset($_GET['signupusername']) && 0 < strlen($_GET['signupusername'])){
+				$username = $_GET['signupusername'];
+			} else {
+				global $wgOut;
+				$wgOut->setPagetitle('Create account');
+				$wgOut->addWikiText('[[Special:OAuth2Client/signup|Click to begin]]');
+				return false;
+			}
+		}
 
 		$user = User::newFromName($username, 'creatable');
 		if (!$user) {
@@ -173,6 +197,46 @@ class SpecialOAuth2Client extends SpecialPage {
 		$sessionUser = User::newFromSession($this->getRequest());
 		$sessionUser->load();
 		return $user;
+	}
+
+	private function _getUserNameFromEmail( $email ) {
+		$dbr = wfGetDB(DB_REPLICA);
+		$res = $dbr->select('user', array('user_name', 'user_id', 'user_email'));
+		foreach($res as $row) {
+			if ( $row->user_email == $email ) {
+				return $row->user_name;
+			}
+		}
+	}
+
+	private function _signupForm(){
+		global $wgOut;
+		$service_name = ( isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2' );
+		$wgOut->setPagetitle(wfMessage( 'oauth2client-signup-header', $service_name)->text() );
+		$this->getOutput()->setPageTitle( 'Create account' );
+		$formDescriptor = [
+			'username' => [
+				'class' => 'HTMLTextField',
+				'label' => 'Choose a username',
+				'size'  => '10'
+			],
+		];
+		$htmlForm = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext() );
+		$htmlForm->setSubmitText('Submit');
+		$htmlForm->setSubmitCallback([$this, 'trySubmit']);
+		$htmlForm->setMethod('post');
+		$htmlForm->show();
+		return true;
+	}
+
+	public function trySubmit( $formData ){
+		global $wgRequest;
+		if ( isset($formData['username']) && 0 < strlen($formData['username']) ) {
+			$this->_redirect($formData['username']);
+		} else {
+			return 'Please enter a username';
+		}
+
 	}
 
 }

@@ -242,14 +242,14 @@ class SpecialOAuth2Client extends SpecialPage {
 
 	public function trySubmit( $formData ){
 
-		$canonicalName = User::getCanonicalName($formData['username'], 'creatable');
+		$username = $formData['username'];
+		$canonicalName = User::getCanonicalName($username, 'creatable');
 
-		if ( !(isset($formData['username']) && 0 < strlen($formData['username'])) ) {
+		if ( !(isset($username) && 0 < strlen($username) && trim($username) != '') ) {
 			return 'Please enter a username';
 		} elseif ( $this->_usernameTaken($canonicalName) ){
 			return 'That username is taken. Please choose another one.';
-		}
-		else {
+		} else {
 			$this->_redirect($canonicalName);
 		}
 	}

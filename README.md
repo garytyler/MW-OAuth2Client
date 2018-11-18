@@ -66,7 +66,26 @@ The **Redirect URI** for your wiki should be:
 http://your.wiki.domain/path/to/wiki/Special:OAuth2Client/callback
 ```
 
-Optional further configuration
+### Creating new usernames
+
+To bypass the username from your auth service and require the user to create their own username when they first login, pass a bool value of `false` to the username field, like:
+
+```
+$wgOAuth2Client['configuration']['username'] = false;
+``` 
+
+**Be aware that this means the user's email address will be the single identifying value of each user.** Because of this, it's recommended to prevent users from changing their email via their MediaWiki preferences, and instead delegate such updates to an administrator to perform manually, or to a script that will perform the update multilaterally.
+
+To prevent users from changing their email via their MediaWiki preferences, you can disable the page Special:ChangeEmail by adding this hook to your LocalSettings.php:
+
+```
+$wgHooks['SpecialPage_initList'][] = function ( &$list ) {
+	unset( $list['ChangeEmail'] );
+	return true;
+};
+```
+
+### Optional further configuration
 
 ```
 $wgOAuth2Client['configuration']['http_bearer_token'] = 'Bearer'; // Token to use in HTTP Authentication

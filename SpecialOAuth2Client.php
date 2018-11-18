@@ -115,7 +115,7 @@ class SpecialOAuth2Client extends SpecialPage {
 
 		$resourceOwner = $this->_provider->getResourceOwner($accessToken);
 		$user = $this->_userHandling( $resourceOwner->toArray() );
-		if (!$user) return true;
+		if ($user == false) return true;
 
 		$user->setCookies();
 

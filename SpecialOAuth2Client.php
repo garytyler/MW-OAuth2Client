@@ -209,6 +209,17 @@ class SpecialOAuth2Client extends SpecialPage {
 		}
 	}
 
+	private function _usernameTaken( $username ) {
+		$dbr = wfGetDB(DB_REPLICA);
+		$res = $dbr->select('user', array('user_name', 'user_id', 'user_email'));
+		foreach($res as $row) {
+			if ( $row->user_name == $username ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private function _signupForm(){
 		global $wgOut;
 		$service_name = ( isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2' );
@@ -230,13 +241,17 @@ class SpecialOAuth2Client extends SpecialPage {
 	}
 
 	public function trySubmit( $formData ){
-		global $wgRequest;
-		if ( isset($formData['username']) && 0 < strlen($formData['username']) ) {
-			$this->_redirect($formData['username']);
-		} else {
-			return 'Please enter a username';
-		}
 
+		$canonicalName = User::getCanonicalName($formData['username'], 'creatable');
+
+		if ( !(isset($formData['username']) && 0 < strlen($formData['username'])) ) {
+			return 'Please enter a username';
+		} elseif ( $this->_usernameTaken($canonicalName) ){
+			return 'That username is taken. Please choose another one.';
+		}
+		else {
+			$this->_redirect($canonicalName);
+		}
 	}
 
 }

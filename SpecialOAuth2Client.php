@@ -22,6 +22,7 @@ require __DIR__.'/JsonHelper.php';
 class SpecialOAuth2Client extends SpecialPage {
 
 	private $_provider;
+	private $table_user = 'oauth2client_users';
 
 	/**
 	 * Required settings in global $wgOAuth2Client

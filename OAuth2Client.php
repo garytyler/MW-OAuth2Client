@@ -67,4 +67,13 @@ class OAuth2ClientHooks {
 		return true;
 	}
 
+	// Schema updates for update.php
+	// $wgHooks['LoadExtensionSchemaUpdates'][] = 'fnMyHook';
+	public static function onLoadExtensionSchemaUpdates( DatabaseUpdater $updater ) {
+		$updater->addExtensionTable( 'oauth2client_user',
+				__DIR__ . '/sql/oauth2client_user.sql' );
+		$updater->doUpdates();
+		return true;
+	}
+
 }

@@ -20,7 +20,8 @@
 	"Hooks": {
 		"PersonalUrls": [
 			"OAuth2ClientHooks::onPersonalUrls"
-		]
+		],
+    	"LoadExtensionSchemaUpdates": "OAuth2ClientHooks::onLoadExtensionSchemaUpdates"
 	},
 	"SpecialPages": {
 		"OAuth2Client": "SpecialOAuth2Client"

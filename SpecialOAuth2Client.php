@@ -9,6 +9,7 @@
  *
  * @author Joost de Keijzer
  * @author Nischay Nahata for Schine GmbH
+ * @author Gary Tyler
  *
  * Uses the OAuth2 library https://github.com/vznet/oauth_2.0_client_php
  *

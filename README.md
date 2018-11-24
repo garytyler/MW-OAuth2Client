@@ -1,5 +1,5 @@
 # MediaWiki OAuth2 Client
-MediaWiki implementation of the PHP League's [OAuth2 Client](https://github.com/thephpleague/oauth2-client), to allow MediaWiki to act as a client to any OAuth2 server. Currently maintained by [Schine GmbH](https://www.star-made.org/).
+MediaWiki implementation of the PHP League's [OAuth2 Client](https://github.com/thephpleague/oauth2-client) with the option to let a user replace the managed username with a new one at signup.
 
 Requires MediaWiki 1.25+.
 
@@ -72,7 +72,7 @@ To bypass the username from your auth service and require the user to create the
 
 ```
 $wgOAuth2Client['configuration']['username'] = false;
-``` 
+```
 
 **Be aware that this means the user's email address will be the single identifying value of each user.** Because of this, it's recommended to prevent users from changing their email via their MediaWiki preferences, and instead delegate such updates to an administrator to perform manually, or to a script that will perform the update multilaterally.
 

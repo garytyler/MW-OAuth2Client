@@ -154,6 +154,7 @@ class SpecialOAuth2Client extends SpecialPage {
 		global $wgOAuth2Client, $wgAuth, $wgRequest;
 
 		$username = JsonHelper::extractValue($response, $wgOAuth2Client['configuration']['username']);
+		$authid = JsonHelper::extractValue($response, $wgOAuth2Client['configuration']['id']);
 		$email =  JsonHelper::extractValue($response, $wgOAuth2Client['configuration']['email']);
 
 		if ($username == false){
@@ -197,6 +198,37 @@ class SpecialOAuth2Client extends SpecialPage {
 		$sessionUser = User::newFromSession($this->getRequest());
 		$sessionUser->load();
 		return $user;
+	}
+
+	private function addToAuthDb( $wiki_user_id, $auth_user_id ) {
+		$dbw = wfGetDB(DB_MASTER);
+		$dbw->begin();
+		$res = $dbw->insert('oauth2client_user',
+			array('wiki_user_id', 'auth_user_id'),
+			array('wiki_user_id'=>$wiki_user_id,
+					'auth_user_id'=>$auth_user_id),
+					__METHOD__);
+		$dbw->commit();
+	}
+
+	private function _getAuthId( $wiki_user_id ) {
+		$dbr = wfGetDB(DB_REPLICA);
+		$res = $dbr->select('oauth2client_user', array('wiki_user_id', 'auth_user_id'));
+		foreach($res as $row) {
+			if ( $row->wiki_user_id == $wiki_user_id ) {
+				return $row->auth_user_id;
+			}
+		}
+	}
+
+	private function _getWikiId( $auth_user_id ) {
+		$dbr = wfGetDB(DB_REPLICA);
+		$res = $dbr->select('oauth2client_user', array('wiki_user_id', 'auth_user_id'));
+		foreach($res as $row) {
+			if ( $row->auth_user_id == $auth_user_id ) {
+				return $row->wiki_user_id;
+			}
+		}
 	}
 
 	private function _getUserNameFromEmail( $email ) {
